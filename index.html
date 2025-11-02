@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>郁金中药材溯源系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #8B4513;
+            --secondary-color: #CD853F;
+            --accent-color: #D2B48C;
+            --light-bg: #f5f7fa;
+            --dark-text: #333;
+            --light-text: #fff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, var(--light-bg) 0%, #f5f5dc 100%);
+            color: var(--dark-text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 15px;
+        }
+
+        /* 头部样式 */
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 2px solid var(--secondary-color);
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--light-text);
+            border-radius: 15px 15px 0 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.1)"/></svg>');
+            background-size: cover;
+        }
+
+        .header h1 {
+            color: var(--light-text);
+            margin-bottom: 15px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        /* 主要轮播组件样式 */
+        .main-carousel-container {
+            position: relative;
+            width: 100%;
+            height: 450px;
+            margin: 30px 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .main-carousel-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out, transform 0.8s ease;
+            transform: scale(1.05);
+        }
+
+        .main-carousel-slide.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .main-slide-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--light-text);
+            text-align: center;
+            padding: 40px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .main-slide-content::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: -1;
+        }
+
+        .main-slide-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .main-slide-title {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .main-slide-desc {
+            font-size: 18px;
+            opacity: 0.95;
+            max-width: 600px;
+            line-height: 1.6;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .main-carousel-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            color: var(--light-text);
+            padding: 20px;
+            text-align: center;
+            font-size: 16px;
+            z-index: 3;
+        }
+
+        .main-carousel-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            z-index: 10;
+            gap: 10px;
+        }
+
+        .main-carousel-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .main-carousel-dot.active {
+            background: var(--light-text);
+            transform: scale(1.2);
+            border-color: var(--secondary-color);
+        }
+
+        .main-carousel-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--light-text);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 22px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            z-index: 10;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .main-carousel-nav:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .main-carousel-prev {
+            left: 20px;
+        }
+
+        .main-carousel-next {
+            right: 20px;
+        }
+
+        /* 批次信息样式 */
+        .batch-info {
+            background: linear-gradient(135deg, #F5F5DC, #DEB887);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--secondary-color);
+        }
+
+        .batch-info p {
+            margin: 8px 0;
+            font-size: 16px;
+        }
+
+        /* 导航标签样式 */
+        .nav-tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            background: #f8f9fa;
+            border-radius: 10px 10px 0 0;
+            overflow: hidden;
+        }
+
+        .nav-tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            margin-right: 0;
+            transition: all 0.3s;
+            font-size: 16px;
+            font-weight: 500;
+            position: relative;
+            flex: 1;
+            text-align: center;
+        }
+
+        .nav-tab.active {
+            background: var(--secondary-color);
+            color: var(--light-text);
+        }
+
+        .nav-tab:hover:not(.active) {
+            background: #f5f5dc;
+        }
+
+        .nav-tab::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--secondary-color);
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+
+        .nav-tab.active::after {
+            transform: scaleX(1);
+        }
+
+        /* 标签内容样式 */
+        .tab-content {
+            display: none;
+            padding: 25px;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            animation: fadeIn 0.5s;
+            background: white;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 信息区块样式 */
+        .info-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .info-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #F5F5DC;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-section h3::before {
+            content: "🌿";
+            margin-right: 10px;
+            font-size: 24px;
+        }
+
+        .info-item {
+            margin: 12px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .info-item::before {
+            content: "•";
+            color: var(--secondary-color);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #555;
+            display: inline-block;
+            min-width: 120px;
+        }
+
+        /* 图片展示样式 */
+        .images-container {
+            margin-top: 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: "📷";
+            margin-right: 8px;
+        }
+
+        /* 小轮播组件样式 */
+        .section-carousel {
+            position: relative;
+            width: 100%;
+            height: 280px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .section-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .section-slide.active {
+            opacity: 1;
+        }
+
+        .section-slide-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--light-text);
+            text-align: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .section-slide-content::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: -1;
+        }
+
+        .section-slide-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .section-slide-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .section-slide-desc {
+            font-size: 15px;
+            opacity: 0.9;
+            max-width: 80%;
+        }
+
+        .section-carousel-controls {
+            position: absolute;
+            bottom: 15px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            z-index: 10;
+            gap: 8px;
+        }
+
+        .section-carousel-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .section-carousel-dot.active {
+            background: var(--light-text);
+            transform: scale(1.2);
+        }
+
+        .section-carousel-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--light-text);
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .section-carousel-nav:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .section-carousel-prev {
+            left: 10px;
+        }
+
+        .section-carousel-next {
+            right: 10px;
+        }
+
+        /* 农事任务样式 */
+        .farming-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .farming-step {
+            background: linear-gradient(135deg, #f5f5dc, #deb887);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--secondary-color);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .farming-step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .step-icon {
+            font-size: 28px;
+            margin-right: 10px;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--secondary-color);
+            border-radius: 50%;
+            color: white;
+        }
+
+        .step-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .step-desc {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        /* 初加工信息样式 */
+        .processing-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .processing-step {
+            background: linear-gradient(135deg, #f5f5dc, #deb887);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--secondary-color);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .processing-step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-tab {
+                padding: 12px 15px;
+                font-size: 14px;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            .main-carousel-container {
+                height: 300px;
+            }
+            
+            .main-slide-icon {
+                font-size: 50px;
+            }
+            
+            .main-slide-title {
+                font-size: 24px;
+            }
+            
+            .main-slide-desc {
+                font-size: 16px;
+            }
+            
+            .main-carousel-nav {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+            
+            .section-carousel {
+                height: 200px;
+            }
+            
+            .farming-steps,
+            .processing-steps {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-carousel-container {
+                height: 250px;
+            }
+            
+            .main-slide-icon {
+                font-size: 40px;
+                margin-bottom: 10px;
+            }
+            
+            .main-slide-title {
+                font-size: 20px;
+            }
+            
+            .main-slide-desc {
+                font-size: 14px;
+            }
+            
+            .main-carousel-caption {
+                font-size: 14px;
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .header-subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>郁金中药材溯源系统</h1>
+        <div class="header-subtitle">全程可追溯 · 品质有保障</div>
+        <div id="batchHeader">
+            <p>产品批号: YJ20250218</p>
+            <p>生产日期: 2025-11-30 | 生产企业: 广西隆森堂中药材有限公司</p>
+        </div>
+    </div>
+
+    <!-- 主要轮播组件 -->
+    <div class="main-carousel-container">
+        <div class="main-carousel-slide active" id="slide1">
+            <div class="main-slide-content" style="background-image: url('images/yujin1.jpg'); background-size: cover; background-position: center;">
+                <div class="main-slide-title">郁金种植基地</div>
+                <div class="main-slide-desc">生态环境优越，适宜郁金生长。基地位于广西灵山县，海拔1275米，气候温和，土壤肥沃。</div>
+            </div>
+            <div class="main-carousel-caption">种植基地 - 生态环境优越</div>
+        </div>
+        <div class="main-carousel-slide" id="slide2">
+            <div class="main-slide-content" style="background-image: url('images/yujin2.jpg'); background-size: cover; background-position: center;">
+                <div class="main-slide-title">有机种植过程</div>
+                <div class="main-slide-desc">采用有机种植方式，不使用化学农药和化肥，确保药材纯天然无污染，从源头保证品质。</div>
+            </div>
+            <div class="main-carousel-caption">生长过程 - 自然有机种植</div>
+        </div>
+        <div class="main-carousel-slide" id="slide3">
+            <div class="main-slide-content" style="background-image: url('images/yujin3.jpg'); background-size: cover; background-position: center;">
+                <div class="main-slide-title">科学采收加工</div>
+                <div class="main-slide-desc">精选生长1年以上的成熟郁金，科学采收，立即进行清洗、蒸煮、烘干、切片、晾晒，保留有效成分。</div>
+            </div>
+            <div class="main-carousel-caption">采收加工 - 保留有效成分</div>
+        </div>
+        <div class="main-carousel-slide" id="slide4">
+            <div class="main-slide-content" style="background-image: url('images/yujin4.jpg'); background-size: cover; background-position: center;">
+                <div class="main-slide-title">严格质量管控</div>
+                <div class="main-slide-desc">从种植到加工全程质量监控，确保每一批郁金都符合国家标准，为消费者提供安全有效的药材。</div>
+            </div>
+            <div class="main-carousel-caption">质量管控 - 安全有效</div>
+        </div>
+        
+        <!-- 导航按钮 -->
+        <button class="main-carousel-nav main-carousel-prev">❮</button>
+        <button class="main-carousel-nav main-carousel-next">❯</button>
+        
+        <!-- 指示点 -->
+        <div class="main-carousel-controls">
+            <div class="main-carousel-dot active" data-slide="0"></div>
+            <div class="main-carousel-dot" data-slide="1"></div>
+            <div class="main-carousel-dot" data-slide="2"></div>
+            <div class="main-carousel-dot" data-slide="3"></div>
+        </div>
+    </div>
+
+    <div id="content">
+        <div class="batch-info">
+            <p><strong>生产日期:</strong> 2025-11-30</p>
+            <p><strong>生产企业:</strong> 广西隆森堂中药材有限公司</p>
+            <p><strong>药材产地:</strong> 广西灵山县郁金种植基地</p>
+            <p><strong>种植面积:</strong> 1000亩</p>
+        </div>
+
+        <div class="nav-tabs">
+            <div class="nav-tab active" data-tab="fullTrace">全程溯源</div>
+            <div class="nav-tab" data-tab="baseMap">基地云图</div>
+            <div class="nav-tab" data-tab="company">药企风采</div>
+            <div class="nav-tab" data-tab="product">产品介绍</div>
+        </div>
+
+        <!-- 全程溯源 -->
+        <div class="tab-content active" id="fullTrace">
+            <div class="info-section">
+                <h3>基础信息</h3>
+                <div class="info-item">
+                    <span class="info-label">药材名称:</span> 郁金
+                </div>
+                <div class="info-item">
+                    <span class="info-label">药材产地:</span> 广西灵山县郁金种植基地
+                </div>
+                <div class="info-item">
+                    <span class="info-label">种植日期:</span> 2025-02-18
+                </div>
+                <div class="info-item">
+                    <span class="info-label">种植面积:</span> 1000 亩
+                </div>
+                <div class="info-item">
+                    <span class="info-label">种植企业:</span> 广西隆森堂中药材有限公司
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>基地信息</h3>
+                <div class="info-item">基地海拔1275米   经度东经110°8'56'' 纬度北纬22°33'39''   年温度 22℃   平均降雨量1600毫米   土壤信息：黄壤 厚度15厘米   有机含量2%-4%    PH值6-7.5</div>
+                <div class="images-container">
+                    <div class="section-title">基地环境展示</div>
+                    <div class="section-carousel">
+                        <div class="section-slide active">
+                            <div class="section-slide-content" style="background-image: url('images/jidi.jpg'); background-size: cover; background-position: center;">
+                                <div class="section-slide-title">郁金种植基地全景</div>
+                                <div class="section-slide-desc">基地环境优美，空气清新</div>
+                            </div>
+                        </div>
+                        <div class="section-slide">
+                            <div class="section-slide-content" style="background-image: url('images/sample.jpg'); background-size: cover; background-position: center;">
+                                <div class="section-slide-title">基地生态环境</div>
+                                <div class="section-slide-desc">无污染的自然生长环境</div>
+                            </div>
+                        </div>
+                        <div class="section-slide">
+                            <div class="section-slide-content" style="background-image: url('images/fandi.jpg'); background-size: cover; background-position: center;">
+                                <div class="section-slide-title">基地土壤检测</div>
+                                <div class="section-slide-desc">定期检测确保土壤健康</div>
+                            </div>
+                        </div>
+                        
+                        <button class="section-carousel-nav section-carousel-prev">❮</button>
+                        <button class="section-carousel-nav section-carousel-next">❯</button>
+                        
+                        <div class="section-carousel-controls">
+                            <div class="section-carousel-dot active" data-slide="0"></div>
+                            <div class="section-carousel-dot" data-slide="1"></div>
+                            <div class="section-carousel-dot" data-slide="2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>农事任务</h3>
+                <div class="info-item">郁金种植遵循传统农事流程，确保药材品质。</div>
+                
+                <div class="farming-steps">
+                    <div class="farming-step">
+                        <div class="step-header">
+                            <div class="step-icon">🌱</div>
+                            <div class="step-title">选种</div>
+                        </div>
+                        <div class="step-desc">
+                            精选优质郁金种源，确保品种纯正，药效优良。选种时间：2025年2月18日。
+                        </div>
+                    </div>
+                    
+                    <div class="farming-step">
+                        <div class="step-header">
+                            <div class="step-icon">🌿</div>
+                            <div class="step-title">翻地培土</div>
+                        </div>
+                        <div class="step-desc">
+                            深耕细作，改良土壤结构，为郁金生长创造良好条件。时间：2025年3月。
+                        </div>
+                    </div>
+                    
+                    <div class="farming-step">
+                        <div class="step-header">
+                            <div class="step-icon">🌾</div>
+                            <div class="step-title">种植盖膜</div>
+                        </div>
+                        <div class="step-desc">
+                            科学种植，覆盖地膜保温保湿，提高成活率。时间：2025年3月。
+                        </div>
+                    </div>
+                    
+                    <div class="farming-step">
+                        <div class="step-header">
+                            <div class="step-icon">🌿</div>
+                            <div class="step-title">除草</div>
+                        </div>
+                        <div class="step-desc">
+                            定期除草，减少养分竞争，促进郁金健康生长。时间：2025年4月下旬至5月上旬。
+                        </div>
+                    </div>
+                    
+                    <div class="farming-step">
+                        <div class="step-header">
+                            <div class="step-icon">💩</div>
+                            <div class="step-title">施肥</div>
+                        </div>
+                        <div class="step-desc">
+                            施用有机肥料，提供充足养分，促进郁金生长。时间：每年4-5月初，6月初。
+                        </div>
+                    </div>
+                    
+                    <div class="farming-step">
+                        <div class="step-header">
+                            <div class="step-icon">⛏️</div>
+                            <div class="step-title">采挖</div>
+                        </div>
+                        <div class="step-desc">
+                            人工采挖成熟郁金，确保药材完整无损。时间：每年11月后开始，最迟3月份结束。
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="images-container">
+                    <div class="section-title">农事任务展示</div>
+                    <div class="section-carousel">
+                        <div class="section-slide active">
+                            <div class="section-slide-content" style="background-image: url('images/xuanzhong.jpg'); background-size: cover; background-position: center;">
+                                <div class="section-slide-title">选种</div>
+                                <div class="section-slide-desc">精选优质郁金种源</div>
+                            </div>
+                        </div>
+                        <div class="section-slide">
+                            <div class="section-slide-content" style="background-image: url('images/fandi.jpg'); background-size: cover; background-position: center;">
+                                <div class="section-slide-title">翻地培土</div>
+                                <div class="section-slide-desc">深耕细作，改良土壤</div>
+                            </div>
+                        </div>
+                        <div class="section-slide">
+                            <div class="section-slide-content" style="background-image: url('images/zhongzhi.jpg'); background-size: cover; background-position: center;">
+                                <div class="section-slide-title">种植盖膜</div>
+                                <div class="section-slide-desc">科学种植，覆盖地膜</div>
+                            </div>
+                        </div>
+                        <div class="section-slide">
+                            <div class="section-slide-content" style="background-image: url('images/chucao.jpg'); background-size: cover; background-position: center;">
+                                <div class="section-slide-title">除草</div>
+                                <div class="section-slide-desc">定期除草，促进生长</div>
+                            </div>
+                        </div>
+                        <div class="section-slide">
+                            <div class="section-slide-content" style="background-image: url('images/shifei.jpg'); background-size: cover; background-position: center;">
+                                <div class="section-slide-title">施肥</div>
+                                <div class="section-slide-desc">施用有机肥料</div>
+                            </div>
+                        </div>
+                        <div class="section-slide">
+                            <div class="section-slide-content" style="background-image: url('images/caiwa.jpg'); background-size: cover; background-position: center;">
+                                <div class="section-slide-title">采挖</div>
+                                <div class="section-slide-desc">人工采挖成熟郁金</div>
+                            </div>
+                        </div>
+                        
+                        <button class="section-carousel-nav section-carousel-prev">❮</button>
+                        <button class="section-carousel-nav section-carousel-next">❯</button>
+                        
+                        <div class="section-carousel-controls">
+                            <div class="section-carousel-dot active" data-slide="0"></div>
+                            <div class="section-carousel-dot" data-slide="1"></div>
+                            <div class="section-carousel-dot" data-slide="2"></div>
+                            <div class="section-carousel-dot" data-slide="3"></div>
+                            <div class="section-carousel-dot" data-slide="4"></div>
+                            <div class="section-carousel-dot" data-slide="5"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>种源信息</h3>
+                <div class="info-item">种源来自本地优质郁金品种，经过多代选育，具有生长快、药效好的特点。</div>
+                <div class="images-container">
+                    <div class="section-title">种源信息展示</div>
+                    <div class="section-carousel">
+                        <div class="section-slide active">
+                            <div class="section-slide-content" style="background-image: url('images/xuanzhong.jpg'); background-size: cover; background-position: center;">
+                                <div class="section-slide-title">优质郁金种源</div>
+                                <div class="section-slide-desc">精心选育的优质品种</div>
+                            </div>
+                        </div>
+                        <div class="section-slide">
+                            <div class="section-slide-content" style="background-image: url('images/sample.jpg'); background-size: cover; background-position: center;">
+                                <div class="section-slide-title">种源鉴定证书</div>
+                                <div class="section-slide-desc">权威机构认证的种源</div>
+                            </div>
+                        </div>
+                        
+                        <button class="section-carousel-nav section-carousel-prev">❮</button>
+                        <button class="section-carousel-nav section-carousel-next">❯</button>
+                        
+                        <div class="section-carousel-controls">
+                            <div class="section-carousel-dot active" data-slide="0"></div>
+                            <div class="section-carousel-dot" data-slide="1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 初加工信息部分 -->
+            <div class="info-section">
+                <h3>初加工信息</h3>
+                <div class="info-item">采收后的郁金立即进行初加工处理，确保药材品质和有效成分不流失。</div>
+                
+                <div class="processing-steps">
+                    <div class="processing-step">
+                        <div class="step-header">
+                            <div class="step-icon">💧</div>
+                            <div class="step-title">清洗</div>
+                        </div>
+                        <div class="step-desc">
+                            采收后的郁金进行彻底清洗，去除泥土和杂质，确保药材干净卫生。
+                        </div>
+                    </div>
+                    
+                    <div class="processing-step">
+                        <div class="step-header">
+                            <div class="step-icon">🔥</div>
+                            <div class="step-title">蒸煮</div>
+                        </div>
+                        <div class="step-desc">
+                            采用传统蒸煮工艺，温度控制在适宜范围，促进有效成分的稳定和释放。
+                        </div>
+                    </div>
+                    
+                    <div class="processing-step">
+                        <div class="step-header">
+                            <div class="step-icon">🌡️</div>
+                            <div class="step-title">烘干</div>
+                        </div>
+                        <div class="step-desc">
+                            蒸煮后的郁金在适宜温度下进行烘干，确保药材干燥均匀，便于保存。
+                        </div>
+                    </div>
+                    
+                    <div class="processing-step">
+                        <div class="step-header">
+                            <div class="step-icon">🔪</div>
+                            <div class="step-title">切片</div>
+                        </div>
+                        <div class="step-desc">
+                            将干燥后的郁金切成标准厚度的片状，便于使用和有效成分释放。
+                        </div>
+                    </div>
+                    
+                    <div class="processing-step">
+                        <div class="step-header">
+                            <div class="step-icon">☀️</div>
+                            <div class="step-title">晾晒</div>
+                        </div>
+                        <div class="step-desc">
+                            切片后的郁金在通风良好的环境中自然晾晒，确保完全干燥，保持药材天然特性。
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="images-container">
+                    <div class="section-title">初加工流程展示</div>
+                    <div class="section-carousel">
+                        <div class="section-slide active">
+                            <div class="section-slide-content" style="background-image: url('images/qingxi.jpg'); background-size: cover; background-position: center;">
+                                <div class="section-slide-title">清洗</div>
+                                <div class="section-slide-desc">彻底清洗，去除杂质</div>
+                            </div>
+                        </div>
+                        <div class="section-slide">
+                            <div class="section-slide-content" style="background-image: url('images/zhengzhu.jpg'); background-size: cover; background-position: center;">
+                                <div class="section-slide-title">蒸煮</div>
+                                <div class="section-slide-desc">传统工艺，稳定成分</div>
+                            </div>
+                        </div>
+                        <div class="section-slide">
+                            <div class="section-slide-content" style="background-image: url('images/honggan.jpg'); background-size: cover; background-position: center;">
+                                <div class="section-slide-title">烘干</div>
+                                <div class="section-slide-desc">适宜温度，均匀干燥</div>
+                            </div>
+                        </div>
+                        <div class="section-slide">
+                            <div class="section-slide-content" style="background-image: url('images/qiepian.jpg'); background-size: cover; background-position: center;">
+                                <div class="section-slide-title">切片</div>
+                                <div class="section-slide-desc">标准厚度，便于使用</div>
+                            </div>
+                        </div>
+                        <div class="section-slide">
+                            <div class="section-slide-content" style="background-image: url('images/liangshai.jpg'); background-size: cover; background-position: center;">
+                                <div class="section-slide-title">晾晒</div>
+                                <div class="section-slide-desc">自然晾晒，保持特性</div>
+                            </div>
+                        </div>
+                        
+                        <button class="section-carousel-nav section-carousel-prev">❮</button>
+                        <button class="section-carousel-nav section-carousel-next">❯</button>
+                        
+                        <div class="section-carousel-controls">
+                            <div class="section-carousel-dot active" data-slide="0"></div>
+                            <div class="section-carousel-dot" data-slide="1"></div>
+                            <div class="section-carousel-dot" data-slide="2"></div>
+                            <div class="section-carousel-dot" data-slide="3"></div>
+                            <div class="section-carousel-dot" data-slide="4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 基地云图 -->
+        <div class="tab-content" id="baseMap">
+            <div class="info-section">
+                <h3>基地地理位置</h3>
+                <div class="map-placeholder">
+                    <div class="map-icon">🗺️</div>
+                    <div id="mapContent">
+                        <p>经度东经110°8'56'' 纬度北纬22°33'39''</p>
+                        <p>广西灵山县郁金种植基地</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h3>基地环境展示</h3>
+                <div class="images-container">
+                    <div class="section-carousel">
+                        <div class="section-slide active">
+                            <div class="section-slide-content" style="background-image: url('images/jidi.jpg'); background-size: cover; background-position: center;">
+                                <div class="section-slide-title">基地全景</div>
+                                <div class="section-slide-desc">远眺种植基地全貌</div>
+                            </div>
+                        </div>
+                        <div class="section-slide">
+                            <div class="section-slide-content" style="background-image: url('images/fandi.jpg'); background-size: cover; background-position: center;">
+                                <div class="section-slide-title">生态环境</div>
+                                <div class="section-slide-desc">无污染的生态环境</div>
+                            </div>
+                        </div>
+                        <div class="section-slide">
+                            <div class="section-slide-content" style="background-image: url('images/xuanzhong.jpg'); background-size: cover; background-position: center;">
+                                <div class="section-slide-title">郁金幼苗</div>
+                                <div class="section-slide-desc">健康生长的郁金幼苗</div>
+                            </div>
+                        </div>
+                        <div class="section-slide">
+                            <div class="section-slide-content" style="background-image: url('images/chucao.jpg'); background-size: cover; background-position: center;">
+                                <div class="section-slide-title">种植过程</div>
+                                <div class="section-slide-desc">专业的种植管理</div>
+                            </div>
+                        </div>
+                        
+                        <button class="section-carousel-nav section-carousel-prev">❮</button>
+                        <button class="section-carousel-nav section-carousel-next">❯</button>
+                        
+                        <div class="section-carousel-controls">
+                            <div class="section-carousel-dot active" data-slide="0"></div>
+                            <div class="section-carousel-dot" data-slide="1"></div>
+                            <div class="section-carousel-dot" data-slide="2"></div>
+                            <div class="section-carousel-dot" data-slide="3"></div>
+                        </div>
+                    </div>
+                </div>
+                <p class="image-tip">点击轮播图可查看详细信息</p>
+            </div>
+            
+            <div class="info-section">
+                <h3>基地详细信息</h3>
+                <div class="base-detail-info">
+                    <h4>广西灵山县郁金种植基地</h4>
+                    <p><strong>地理位置:</strong> 广西壮族自治区灵山县，海拔1275米山区</p>
+                    <p><strong>气候条件:</strong> 亚热带季风气候，年平均温度22℃，年降水量1600mm</p>
+                    <p><strong>土壤特性:</strong> 黄壤土，pH值6-7.5，有机含量2-4%</p>
+                    <p><strong>环境优势:</strong> 无工业污染，空气质量优良，水源纯净</p>
+                    <p><strong>种植历史:</strong> 已有多年郁金种植经验，技术成熟</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 药企风采 -->
+        <div class="tab-content" id="company">
+            <div class="info-section">
+                <h3>企业介绍</h3>
+                <div class="base-detail-info">
+                    <h4>广西隆森堂中药材有限公司</h4>
+                    <p>广西隆生堂中药材有限公司专注于优质中药材的种植、加工和销售。公司拥有GAP认证种植基地，年产量达200万千克。</p>
+                    <p>公司秉承"质量第一，诚信经营"的理念，为消费者提供安全、有效的中药材产品。</p>
+                    <p><strong>企业资质:</strong> GAP认证企业、ISO9001质量管理体系认证、有机产品认证</p>
+                    <p><strong>技术实力:</strong> 拥有专业的技术团队，与多所高校建立产学研合作关系</p>
+                    <p><strong>社会责任:</strong> 带动当地农户就业，促进乡村振兴</p>
+                    <p><strong>主要联系人:</strong> 邓红英</p>
+                    <p><strong>联系电话:</strong> 13197754066</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 产品介绍 -->
+        <div class="tab-content" id="product">
+            <div class="info-section">
+                <h3>郁金产品介绍</h3>
+                <div class="base-detail-info">
+                    <h4>郁金（Curcuma）</h4>
+                    <p><strong>药材来源:</strong> 为姜科植物温郁金、姜黄、广西莪术或蓬莪术的干燥块根</p>
+                    <p><strong>性味归经:</strong> 辛、苦，寒。归肝、心、肺经</p>
+                    <p><strong>主要功效:</strong> 活血止痛，行气解郁，清心凉血，利胆退黄</p>
+                    <p><strong>临床应用:</strong> 主要用于治疗胸胁刺痛，胸痹心痛，经闭痛经，乳房胀痛，热病神昏，癫痫发狂，血热吐衄，黄疸尿赤</p>
+                    <p><strong>用法用量:</strong> 内服，煎汤，3-10g；或入丸、散</p>
+                    <p><strong>质量特点:</strong> 本品为有机种植，无农药残留，有效成分含量高</p>
+                    <p><strong>贮藏条件:</strong> 置干燥处，防蛀</p>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h3>采收信息</h3>
+                <div class="info-item">
+                    <span class="info-label">生长年限:</span> 1年
+                </div>
+                <div class="info-item">
+                    <span class="info-label">采收方式:</span> 人工
+                </div>
+                <div class="info-item">
+                    <span class="info-label">采收时间:</span> 2025年11月
+                </div>
+                <div class="info-item">
+                    <span class="info-label">采收结束时间:</span> 2025年11月底
+                </div>
+                <div class="info-item">
+                    <span class="info-label">采收面积:</span> 1000亩
+                </div>
+                <div class="info-item">
+                    <span class="info-label">采收鲜货重量:</span> 200万千克
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h3>产品优势</h3>
+                <div class="info-item">
+                    <span class="info-label">有机种植:</span> 全程有机种植，无化学农药和化肥
+                </div>
+                <div class="info-item">
+                    <span class="info-label">全程溯源:</span> 从种植到加工全程可追溯
+                </div>
+                <div class="info-item">
+                    <span class="info-label">质量保证:</span> 严格的质量控制和检测标准
+                </div>
+                <div class="info-item">
+                    <span class="info-label">道地药材:</span> 产自广西道地产区，品质优良
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 郁金中药材溯源系统 - 简化版
+    document.addEventListener('DOMContentLoaded', function() {
+        initMainCarousel();
+        initSectionCarousels();
+        setupTabNavigation();
+    });
+
+    // 主要轮播功能
+    function initMainCarousel() {
+        const slides = document.querySelectorAll('.main-carousel-slide');
+        const dots = document.querySelectorAll('.main-carousel-dot');
+        const prevBtn = document.querySelector('.main-carousel-prev');
+        const nextBtn = document.querySelector('.main-carousel-next');
+        
+        let currentSlide = 0;
+        let slideInterval;
+        
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            dots.forEach(dot => dot.classList.remove('active'));
+            
+            currentSlide = (n + slides.length) % slides.length;
+            
+            slides[currentSlide].classList.add('active');
+            if (dots[currentSlide]) {
+                dots[currentSlide].classList.add('active');
+            }
+        }
+        
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+        
+        function prevSlide() {
+            showSlide(currentSlide - 1);
+        }
+        
+        function startAutoPlay() {
+            slideInterval = setInterval(nextSlide, 5000);
+        }
+        
+        function stopAutoPlay() {
+            if (slideInterval) {
+                clearInterval(slideInterval);
+            }
+        }
+        
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                nextSlide();
+                stopAutoPlay();
+                startAutoPlay();
+            });
+        }
+        
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                prevSlide();
+                stopAutoPlay();
+                startAutoPlay();
+            });
+        }
+        
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                showSlide(index);
+                stopAutoPlay();
+                startAutoPlay();
+            });
+        });
+        
+        const carousel = document.querySelector('.main-carousel-container');
+        if (carousel) {
+            carousel.addEventListener('mouseenter', stopAutoPlay);
+            carousel.addEventListener('mouseleave', startAutoPlay);
+        }
+        
+        startAutoPlay();
+    }
+
+    // 初始化各个部分的轮播
+    function initSectionCarousels() {
+        const carousels = document.querySelectorAll('.section-carousel');
+        
+        carousels.forEach(carousel => {
+            const slides = carousel.querySelectorAll('.section-slide');
+            const dots = carousel.querySelectorAll('.section-carousel-dot');
+            const prevBtn = carousel.querySelector('.section-carousel-prev');
+            const nextBtn = carousel.querySelector('.section-carousel-next');
+            
+            let currentSlide = 0;
+            
+            function showSlide(n) {
+                slides.forEach(slide => slide.classList.remove('active'));
+                dots.forEach(dot => dot.classList.remove('active'));
+                
+                currentSlide = (n + slides.length) % slides.length;
+                
+                slides[currentSlide].classList.add('active');
+                if (dots[currentSlide]) {
+                    dots[currentSlide].classList.add('active');
+                }
+            }
+            
+            function nextSlide() {
+                showSlide(currentSlide + 1);
+            }
+            
+            function prevSlide() {
+                showSlide(currentSlide - 1);
+            }
+            
+            if (nextBtn) {
+                nextBtn.addEventListener('click', nextSlide);
+            }
+            
+            if (prevBtn) {
+                prevBtn.addEventListener('click', prevSlide);
+            }
+            
+            dots.forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    showSlide(index);
+                });
+            });
+            
+            // 为每个轮播添加点击切换功能
+            carousel.addEventListener('click', (e) => {
+                if (e.target === carousel || e.target.classList.contains('section-slide-content')) {
+                    nextSlide();
+                }
+            });
+        });
+    }
+
+    // 设置标签页导航
+    function setupTabNavigation() {
+        const tabs = document.querySelectorAll('.nav-tab');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                tabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const contents = document.querySelectorAll('.tab-content');
+                contents.forEach(content => content.classList.remove('active'));
+                
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+    }
+</script>
+</body>
+</html>
